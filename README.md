@@ -66,13 +66,17 @@ cd vendor-sdk-containment-kit && swift test   # macOS; see that README for the L
 
 What actually happened, stated separately:
 
-- **Build for the iOS Simulator: CI is configured; first run pending at the time of writing.** This repo's [Actions workflow](https://github.com/rajatslakhina/vendor-sdk-containment-kit-demo/actions) runs on `macos-15`. It runs `xcodebuild -resolvePackageDependencies` (the remote package must resolve from GitHub at a 1.x tag) and then `xcodebuild build -scheme Demo -destination 'generic/platform=iOS Simulator'`.
+- **Builds for the iOS Simulator: yes, in CI.** This repo's [Actions workflow](https://github.com/rajatslakhina/vendor-sdk-containment-kit-demo/actions) runs on `macos-15`, and its first run passed both steps:
+  - `xcodebuild -resolvePackageDependencies` resolved `VendorContainment` from GitHub. With the requirement "up to next major from 1.0.1", the only satisfying tag is `v1.0.1`.
+  - `xcodebuild build -scheme Demo -destination 'generic/platform=iOS Simulator'` compiled the app against it.
+
+  That proves the project opens, the remote package resolves, and the app compiles. It does not prove the app runs.
 - **Ran on a Simulator: no.** The run was attempted from an unattended session. Computer-use access was granted, but Xcode can only be controlled at "click" tier, which refuses menu commands and keyboard input. Xcode also launched with no window open, so there was nothing to click that could open this project. The session has no macOS shell (no `xcodebuild` / `simctl`). The app has therefore **not** been launched, interacted with, or screenshotted. "It builds for a Simulator" is not the same claim, and isn't made as one.
 - **The behaviour in the table above is tested, not assumed.** Two library tests cover it:
   - `ContainmentConsoleModelTests.testDefaultReplayShowsCrashesThenContainment` drives the same view model with this app's default scenario. It asserts the crash sequence, the provisional strike recorded for launch 1, `analytics` clearing its window alone in launch 2, the unambiguous second strike, and the "attribution contained" headline.
   - `IncidentReplayTests.testPoisonedPayloadCrashesTwiceThenIsContained` checks the same at the runtime level.
 
-  Both are part of the library's CI suite (Linux and macOS).
+  Both pass in the library's CI on the `v1.0.1` commit (Linux and macOS jobs).
 
 ## License
 
